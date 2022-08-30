@@ -133,3 +133,8 @@ func (mpi localMpi) First(ctx context.Context, m mp.Meta, opts ...mp.Meta) (mp.M
 	return mp.JsonToMeta(mj), nil
 }
 */
+
+func Error(err error, defaultCode int) (mp.Meta, int) {
+	code := goutil.ErrorCode(err, defaultCode)
+	return mp.AjaxError(code, err.Error()), code
+}

@@ -15,6 +15,7 @@ type Meta interface {
 	IsError() bool
 	IsValid() bool
 	Error() string
+	ErrorCode(otherwise int) int
 
 	WithMethod(mthd string) Meta
 	WithGid(gid string) Meta
@@ -115,6 +116,15 @@ func (m *meta) Error() string {
 	return ""
 }
 
+func (m *meta) ErrorCode(otherwise int) int {
+	if m.IsError() && m.HasAttr("code") {
+		if code, err := m.IntAttr("code"); err == nil {
+			return code
+		}
+	}
+	return otherwise
+}
+
 func (m *meta) WithMethod(mthd string) Meta {
 	return &meta{info{m.kind, mthd, m.ns, m.gid, m.tags, m.attrs, m.payload}, m.subs, m.rels, m.list}
 }
@@ -134,6 +144,10 @@ func (m *meta) WithTag(name, value string, rest ...string) Meta {
 }
 
 func (m *meta) WithTags(ts map[string]string) Meta {
+	if len(ts) == 0 {
+		return m
+	}
+
 	tags := copyStrMap(m.tags, len(ts))
 	for k, v := range ts {
 		tags[k] = v
@@ -143,6 +157,10 @@ func (m *meta) WithTags(ts map[string]string) Meta {
 
 func (m *meta) WithAttr(args ...string) Meta {
 	argn := len(args) / 2
+	if argn == 0 {
+		return m
+	}
+
 	attrs := copyStrMap(m.attrs, argn)
 	for i := 0; i < argn; i++ {
 		attrs[args[2*i]] = args[2*i+1]
@@ -151,6 +169,10 @@ func (m *meta) WithAttr(args ...string) Meta {
 }
 
 func (m *meta) WithAttrs(ts map[string]string) Meta {
+	if len(ts) == 0 {
+		return m
+	}
+
 	attrs := copyStrMap(m.attrs, len(ts))
 	for k, v := range ts {
 		attrs[k] = v

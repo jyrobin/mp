@@ -1,6 +1,8 @@
 package mpi
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jyrobin/goutil"
 	"github.com/jyrobin/mp"
@@ -26,6 +28,8 @@ func Mount(g *gin.RouterGroup, dom mp.Domain) { // , logging jog.Logging) {
 		//	zap.String("ns", m.Ns()),
 		//).Info("Call")
 
+		fmt.Println(mthd, m.Json("  "))
+
 		if ret, err := dom.Call(ctx, mthd, m, opts...); err != nil {
 			//logging.For(ctx).With(
 			//	zap.String("method", mthd),
@@ -33,7 +37,10 @@ func Mount(g *gin.RouterGroup, dom mp.Domain) { // , logging jog.Logging) {
 			//	zap.String("ns", m.Ns()),
 			//).Error(err.Error())
 
-			c.JSON(400, mp.ErrorFor(m, err, "code", "400", "method", mthd))
+			fmt.Println(err)
+
+			me, code := Error(err, 400)
+			c.JSON(code, me)
 		} else {
 			//logging.For(ctx).With(
 			//	zap.String("kind", ret.Kind()),

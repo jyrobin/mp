@@ -37,6 +37,7 @@ type Info interface {
 
 	Attr(name string) string
 	IntAttr(name string) (int, error)
+	IntAttrOr(name string, otherwise int) int
 	BoolAttr(name string) (bool, error)
 	IsTrueAttr(name string) bool
 	IsFalseAttr(name string) bool
@@ -171,6 +172,15 @@ func (m info) Attr(name string) string {
 func (m info) IntAttr(name string) (int, error) {
 	return strconv.Atoi(m.attrs[name])
 }
+func (m info) IntAttrOr(name string, otherwise int) int {
+	if val, ok := m.attrs[name]; ok {
+		if ret, err := strconv.Atoi(val); err == nil {
+			return ret
+		}
+	}
+	return otherwise
+}
+
 func (m info) BoolAttr(name string) (bool, error) {
 	val := m.Attr(name)
 	if b, ok := truth[strings.ToLower(val)]; ok {

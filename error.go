@@ -3,15 +3,11 @@ package mp
 import "strconv"
 
 func Error(msg string, args ...string) Meta {
-	return New("Error").
-		WithAttr("message", msg).
-		WithAttr(args...)
+	return New("Error", "message", msg).WithAttr(args...)
 }
 
 func AjaxError(code int, msg string, args ...string) Meta {
-	return New("Error").
-		WithAttr("code", strconv.Itoa(code)).
-		WithAttr("message", msg).
+	return New("Error", "message", msg, "code", strconv.Itoa(code)).
 		WithAttr(args...)
 }
 
