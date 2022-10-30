@@ -23,6 +23,7 @@ type Meta interface {
 	WithTag(name, value string, rest ...string) Meta
 	WithTags(map[string]string) Meta
 	WithAttr(args ...string) Meta
+	WithNonEmptyAttr(args ...string) Meta
 	WithAttrs(map[string]string) Meta
 
 	WithPayload(data string) Meta
@@ -156,14 +157,30 @@ func (m *meta) WithTags(ts map[string]string) Meta {
 }
 
 func (m *meta) WithAttr(args ...string) Meta {
+	return m.withAttr(false, args)
+}
+
+func (m *meta) WithNonEmptyAttr(args ...string) Meta {
+	return m.withAttr(true, args)
+}
+
+func (m *meta) withAttr(skip bool, args []string) Meta {
 	argn := len(args) / 2
-	if argn == 0 {
+	changed := 0
+	for i := 0; i < argn; i++ {
+		if !skip || args[2*i+1] != "" {
+			changed += 1
+		}
+	}
+	if changed == 0 {
 		return m
 	}
 
-	attrs := copyStrMap(m.attrs, argn)
+	attrs := copyStrMap(m.attrs, changed)
 	for i := 0; i < argn; i++ {
-		attrs[args[2*i]] = args[2*i+1]
+		if val := args[2*i+1]; !skip || val != "" {
+			attrs[args[2*i]] = val
+		}
 	}
 	return &meta{info{m.kind, m.mthd, m.ns, m.gid, m.tags, attrs, m.payload}, m.subs, m.rels, m.list}
 }
