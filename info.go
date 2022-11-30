@@ -23,6 +23,7 @@ type Info interface {
 	Kind() string
 	Ns() string
 	Method() string
+	Cat() string
 
 	Gid() string
 	Label() string
@@ -35,7 +36,8 @@ type Info interface {
 	TagMap() map[string]string // cloned
 	Is(kind, ns string, tags ...string) bool
 
-	Attr(name string) string
+	Attr(name string, otherwise ...string) string
+	AttrOk(name string) (string, bool)
 	IntAttr(name string) (int, error)
 	IntAttrOr(name string, otherwise int) int
 	BoolAttr(name string) (bool, error)
@@ -81,6 +83,10 @@ func (m info) Method() string {
 
 func (m info) Gid() string {
 	return m.gid
+}
+
+func (m info) Cat() string {
+	return m.Tag("cat")
 }
 
 func (m info) Label() string {
@@ -166,9 +172,20 @@ func (m info) Is(kind, ns string, tags ...string) bool {
 	return m.Kind() == kind && m.Ns() == ns && m.HasTag(tags...)
 }
 
-func (m info) Attr(name string) string {
-	return m.attrs[name]
+func (m info) Attr(name string, otherwise ...string) string {
+	if ret, ok := m.attrs[name]; ok {
+		return ret
+	}
+	if len(otherwise) > 0 {
+		return otherwise[0]
+	}
+	return ""
 }
+func (m info) AttrOk(name string) (string, bool) {
+	ret, ok := m.attrs[name]
+	return ret, ok
+}
+
 func (m info) IntAttr(name string) (int, error) {
 	return strconv.Atoi(m.attrs[name])
 }

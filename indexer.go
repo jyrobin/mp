@@ -39,7 +39,11 @@ func SimpleIndexer(dom Domain) *indexer {
 			kmap[kind] = append(kmap[kind], actor)
 
 			if mthd := am.Method(); mthd != "" {
-				key := kind + "." + mthd
+				key := kind
+				if cat := am.Cat(); cat != "" {
+					key += "[" + cat + "]"
+				}
+				key += "." + mthd
 				if _, ok := mmap[key]; !ok { // no override...
 					mmap[key] = actor
 				}

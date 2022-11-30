@@ -1,14 +1,15 @@
 package mp
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func Error(msg string, args ...string) Meta {
-	return New("Error", "message", msg).WithAttr(args...)
+	return New("Error").WithAttr("message", msg).WithAttr(args...)
 }
 
 func AjaxError(code int, msg string, args ...string) Meta {
-	return New("Error", "message", msg, "code", strconv.Itoa(code)).
-		WithAttr(args...)
+	return New("Error").WithAttr("message", msg, "code", strconv.Itoa(code)).WithAttr(args...)
 }
 
 func ErrorFor(m Meta, err error, args ...string) Meta {

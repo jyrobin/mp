@@ -11,18 +11,28 @@ import (
 )
 
 type Request struct {
-	Method  string        `json:"method,omitempty"`
-	Meta    mp.MetaJson   `json:"meta,omitempty"`
-	Options []mp.MetaJson `json:"options,omitempty"` //TODO: rename to Options
+	Method  string       `json:"method,omitempty"`
+	Meta    mp.MetaJson  `json:"meta,omitempty"`
+	Options *mp.MetaJson `json:"options,omitempty"`
 }
 
-func (req Request) Unpack() (string, mp.Meta, []mp.Meta) {
-	m, opts := mp.JsonToMeta(req.Meta), mp.JsonsToMetas(req.Options)
+func (req Request) Unpack() (string, mp.Meta, mp.Meta) {
+	m, opts := mp.JsonToMeta(req.Meta), mp.Nil
+	if req.Options != nil {
+		opts = mp.JsonToMeta(*req.Options)
+	}
 	return req.Method, m, opts
 }
 
-func RequestBody(method string, m mp.Meta, opts []mp.Meta) []byte {
-	req := Request{method, mp.MetaToJson(m), mp.MetasToJsons(opts)}
+func RequestBody(method string, m mp.Meta, opts ...mp.Meta) []byte {
+	req := Request{
+		Method: method,
+		Meta:   mp.MetaToJson(m),
+	}
+	if len(opts) > 0 && !opts[0].IsNil() {
+		optsJson := mp.MetaToJson(opts[0])
+		req.Options = &optsJson
+	}
 	buf, _ := json.MarshalIndent(req, "", "  ")
 	return buf
 }
@@ -62,7 +72,7 @@ func (mpi LocalMpi) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func (mpi LocalMpi) Call(ctx context.Context, method string, m mp.Meta, opts ...mp.Meta) (mp.Meta, error) {
 	uri := fmt.Sprintf("%s/call", mpi.prefix)
-	body := RequestBody(method, m, opts)
+	body := RequestBody(method, m, opts...)
 	req, err := goutil.AjaxRequest("POST", uri, body, nil)
 	if err != nil {
 		return mp.Nil, err
